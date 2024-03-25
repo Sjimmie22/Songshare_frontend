@@ -1,0 +1,36 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build:
+  stage: build
+  script:
+    - npm install --legacy-peer-deps
+    - npm run build
+
+test:
+  stage: test
+  script:
+    - npm install --legacy-peer-deps
+    - npm run test:unit
+  dependencies:
+    - build
+
+deploy:
+  stage: deploy
+
+  variables:
+    DOCKER_IMAGE_NAME: $DOCKER_USERNAME"/front-end-semester-3-2023-fontys"
+    DOCKER_REGISTRY: "docker.io"
+
+  before_script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin "$DOCKER_REGISTRY"
+
+  script:
+    - docker build -t "$DOCKER_IMAGE_NAME" .
+    - docker push "$DOCKER_IMAGE_NAME"
+    
+  only:
+    - main
+
